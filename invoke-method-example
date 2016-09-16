@@ -1,3 +1,8 @@
 
-#import( "site://site-analysis/_formats/_analysis" )
-#siteAnalysis ( "cnymph", "largeImages" )
+#import( "site://site-analysis/_formats/_analysis-begin" )
+
+##example: create site-specific reports
+#siteAnalysis ( "currentPage", "report" )
+
+##example: search all sites for specific issue
+#siteAnalysis ( "allSites", "currentPage" )
