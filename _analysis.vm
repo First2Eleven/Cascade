@@ -1,0 +1,165 @@
+## #siteAnalysis options
+## $whatSite: siteName, currentPage, allSites, actual site name (eg. "about"), createdX and modifiedX wherein X is number of days ago. 
+## $whatReport: report, test, individual test (eg. "h1Wrong"), currentPage (equals previous stuff)
+
+##siteAnalysis( "con", "report")
+
+#macro(siteAnalysis $whatSite, $whatReport)
+
+    #import( "site://_common_assets/formats/library/velocity/chanw_library_import" )
+    #import( "site://site-analysis/_formats/_analysis-query" )
+    #import( "site://site-analysis/_formats/_analysis-process" )
+    #import( "site://site-analysis/_formats/_analysis-report" )
+
+    #set( $badH1NamesReport         = [] )
+    #set( $badSystemNamesReport     = [] )
+    #set( $divsInWysiwygReport      = [] )
+    #set( $indexNotFirstReport      = [] )
+    #set( $largeImagesReport        = [] )
+    #set( $nonBreakingSpacesReport  = [] )
+    #set( $notPublishedReport       = [] )
+    #set( $symLinksToUpstateReport  = [] )
+    #set( $textSearchReport         = [] )    
+    #set( $unusedBlocksReport       = [] )
+    #set( $ususedFilesReport        = [] )
+    #set( $webDotUpstateLinksReport = [] )
+    #set( $wrongMetadataReport      = [] )
+
+    #set( $query            = $_.query() )  
+    #set( $systemDate       = $_DateTool.getSystemDate() )
+
+    #if($whatReport == "currentPage")
+        #set($whatReport  = $currentPage.name)
+    #end
+    #if($whatReport == "report")
+        #set( $whatReport               = ["badSystemNames", "badH1Names", "divsInWysiwyg", "indexNotFirst", "largeImages", "nonBreakingSpaces", "notPublished", "webDotUpstateLinks", "wrongMetadata" ] )        
+    #elseif($whatReport == "test")
+        #set( $whatReport               = [ "oldestVsNewest", "symLinksToUpstate", "unusedBlocks", "unusedFiles" ] )            
+    #end
+    #grabStuff
+    #reportStuff
+#end
+
+#macro(grabStuff)
+    #if($whatSite == "currentPage")
+        #set($whatSite  = $currentPage.name)
+    #elseif($whatSite == "siteName")
+        #set($whatSite  = $currentPage.siteName)
+    #end
+    #if($whatSite == "allSites" || $whatSite.contains("created") || $whatSite.contains("modified") )
+        #set( $dayInteger       = $_MathTool.toNumber( $whatSite.replaceAll("created","").replaceAll("modified","") ) )
+        #if( $whatSite.contains("modified") )
+            #set($timeMethod    =   'lastModified')
+            #set($whatSite      =   "Modified in the last " + $dayInteger + " days" )
+        #elseif( $whatSite.contains("created") )
+            #set($timeMethod    =   'createdOn')
+            #set($whatSite      =   "Created in the last " + $dayInteger + " days" )
+        #end
+        #import( 'site://_common_assets/formats/library/velocity/upstate_database' )
+##      #set( $allSites         = $_.locateFolder('sites', "site-analysis").children )
+        #foreach( $sites in $upstateSiteName )    
+            #set($site      = $sites.name)
+            #set($showSiteName  = $site + ":")
+            #queryAndProcess
+        #end
+    #else 
+        #set($site  = $whatSite)
+        #set($showSiteName  = "")
+        #queryAndProcess
+    #end
+#end
+
+
+#macro(queryAndProcess)
+    #if($whatReport.contains("wrongMetadata")
+        )
+        #grabBlocks
+    #end
+    #if($whatReport.contains("badSystemNames") ||
+        $whatReport.contains("largeImages") ||
+        $whatReport.contains("wrongMetadata")
+        )
+        #grabFiles
+    #end
+    #if($whatReport.contains("badSystemNames") ||
+        $whatReport.contains("indexNotFirst") ||
+        $whatReport.contains("wrongMetadata")
+        )
+        #grabFolders
+    #end
+    #if(
+        $whatReport.contains("notPublished") ||
+        $whatReport.contains("badH1Names") ||
+        $whatReport.contains("badSystemNames") ||
+        $whatReport.contains("divsInWysiwyg") ||
+        $whatReport.contains("nonBreakingSpaces") ||
+        $whatReport.contains("indexNotFirst") ||
+        $whatReport.contains("textSearch") ||
+        $whatReport.contains("webDotUpstateLinks") ||
+        $whatReport.contains("wrongMetadata")
+        )
+        #grabPages
+    #end            
+    #if($whatReport.contains("symLinksToUpstate") ||
+        $whatReport.contains("wrongMetadata")
+        )
+        #grabSymlinks
+    #end
+    #processStuff
+#end
+
+
+
+## This macro, after the query, processes each page
+#macro(processStuff)
+        #foreach($result in $pages)
+            #if($whatSite.contains("in the last"))
+                #chanwCallJavaMethod( 'result' $timeMethod )
+                #if($_DateTool.difference($chanwCallJavaMethod,$systemDate).getDays() <= $dayInteger )
+                    #processPage
+                #end
+            #else
+                #processPage
+            #end
+        #end
+        #foreach($result in $folders)
+            #if($whatSite.contains("in the last"))
+                #chanwCallJavaMethod( 'result' $timeMethod )
+                #if($_DateTool.difference($chanwCallJavaMethod,$systemDate).getDays() <= $dayInteger )
+                    #processFolder
+                #end
+            #else
+                #processFolder
+            #end
+        #end
+        #foreach($result in $files)
+            #if($whatSite.contains("in the last"))
+                #chanwCallJavaMethod( 'result' $timeMethod )
+                #if($_DateTool.difference($chanwCallJavaMethod,$systemDate).getDays() <= $dayInteger )
+                    #processFile
+                #end 
+            #else
+                #processFile
+            #end
+        #end
+        #foreach($result in $blocks)
+            #if($whatSite.contains("in the last"))
+                #chanwCallJavaMethod( 'result' $timeMethod )
+                #if($_DateTool.difference($chanwCallJavaMethod,$systemDate).getDays() <= $dayInteger )
+                    #processBlock
+                #end
+            #else
+                #processBlock
+            #end
+        #end
+        #foreach($result in $symlinks)
+            #if($whatSite.contains("in the last"))
+                #chanwCallJavaMethod( 'result' $timeMethod )
+                #if($_DateTool.difference($chanwCallJavaMethod,$systemDate).getDays() <= $dayInteger )
+                    #processSymlink
+                #end
+            #else
+                #processSymlink
+            #end
+        #end
+#end
