@@ -1,0 +1,230 @@
+#macro( reportStuff )
+
+    #if($whatReport.size() > 1)
+        <h1>$whatSite report</h1>
+        <a href="#" id="expand_all">Expand All</a>
+        <div class="accordion">
+    #else
+        <h1>$whatSite $whatReport</h1>
+    #end
+    
+
+    #if ( !$wrongMetadataReport.isEmpty() )
+        <h2>Wrong Metadata</h2>
+        <div>
+            <p>${_.locatePage("wrongMetadata","site-analysis").metadata.Summary}</p>
+            <ul>
+                #foreach ( $item in $wrongMetadataReport )
+                    <li><a target='_parent' href='http://web.upstate.edu:8080/entity/open.act?type=${item.type}&amp;id=${item.id}'>${item.link}</a> a $item.type listed as a $item.wrong</li>
+                #end
+            </ul>
+            <p>For admin use:
+                <pre>
+                    $ids = [#foreach ( $item in $wrongMetadataReport )"$item.id" => "$item.type", #end ]
+                </pre>
+            </p>            
+    
+        </div>
+    #end
+
+    #if ( !$notPublishedReport.isEmpty() )
+        <h2>Pages to Publish</h2>
+        <div>
+            <p>The following pages have edits that have yet to be published</p>
+		    <ul>
+                #foreach ( $item in $notPublishedReport )
+                    <li><a target='_parent' href='http://web.upstate.edu:8080/entity/open.act?type=${item.type}&amp;id=${item.id}'>${item.link}</a></li>
+                #end
+		    </ul>
+            <p>For admin use:
+                <pre>
+                    $ids = [#foreach ( $item in $notPublishedReport )"$item.id", #end ]
+                </pre>
+            </p>         
+        </div>
+	#end
+    
+    #if ( !$textSearchReport.isEmpty() )
+        <h2>Text Search Report</h2>
+        <div>
+            <p>Takes a search term either in the display name or summary.</p>
+    	    <ul>
+                #foreach ( $item in $textSearchReport )
+                    <li><a target='_parent' href='http://web.upstate.edu:8080/entity/open.act?type=${item.type}&amp;id=${item.id}'>${item.link}</a></li>
+                #end
+		    </ul>
+            <p>For admin use:
+                <pre>
+                    $ids = [#foreach ( $item in $textSearchReport )"$item.id", #end ]
+                </pre>
+            </p>         
+        </div>
+	#end
+
+    #if ( !$indexNotFirstReport.isEmpty() )
+        <h2>Index Page Not Listed As First in Sort Order</h2>
+        <div>
+            <p>If the index page is not listed as first, it's possible the left-navigation for that folder will look incorrect.</p>
+            <ul>
+                #foreach ( $item in $indexNotFirstReport )
+                    <li><a target='_parent' href='http://web.upstate.edu:8080/entity/open.act?type=${item.type}&amp;id=${item.id}'>${item.link}</a></li>
+                #end
+            </ul>
+            <p>For admin use:
+                <pre>
+                    $ids = [#foreach ( $item in $indexNotFirstReport )"$item.id", #end ]
+                </pre>
+            </p>     
+        </div>
+    #end
+
+    #if ( !$badH1NamesReport.isEmpty() )
+		<h2>Pages with missing H1s</h2>
+        <div>
+    		<p>Either new pages that have the unchanged text or migrated into Cascade and not yet edited:</p>
+    		<ul>
+                #foreach ( $item in $badH1NamesReport )
+                    <li><a target='_parent' href='http://web.upstate.edu:8080/entity/open.act?type=${item.type}&amp;id=${item.id}'>${item.link}</a></li>
+                #end
+    		</ul>
+            <p>For admin use:
+                <pre>
+                    $ids = [#foreach ( $item in $badH1NamesReport )"$item.id", #end ]
+                </pre>
+            </p>   
+        </div>
+	#end
+
+	#if ( !$badSystemNamesReport.isEmpty() )
+		<h2>Pages with bad System Names</h2>
+        <div>
+    		<p>Spaces in system name and/or capitalizations:</p>
+    		<ul>
+                #foreach ( $item in $badSystemNamesReport )
+                    <li><a target='_parent' href='http://web.upstate.edu:8080/entity/open.act?type=${item.type}&amp;id=${item.id}'>${item.link}</a></li>
+                #end
+    		</ul>
+            <p>For admin use:
+                <pre>
+                    $ids = [#foreach ( $item in $badSystemNamesReport )"$item.id", #end ]
+                </pre>
+            </p>   
+        </div>
+	#end
+    
+    #if ( !$webDotUpstateLinksReport.isEmpty() )
+        <h2>Possible http://web.upstate.edu links</h2>
+        <div>
+            <p>Most links on our site should go to www.upstate.edu, not our testing server. Please check these pages and make edits if necessary.</p>
+    		<ul>
+                #foreach ( $item in $webDotUpstateLinksReport )
+                    <li><a target='_parent' href='http://web.upstate.edu:8080/entity/open.act?type=${item.type}&amp;id=${item.id}'>${item.link}</a></li>
+                #end
+    		</ul>
+            <p>For admin use:
+                <pre>
+                    $ids = [#foreach ( $item in $webDotUpstateLinksReport )"$item.id", #end ]
+                </pre>
+            </p>   
+        </div>
+	#end
+
+
+    #if ( !$nonBreakingSpacesReport.isEmpty() )
+        <h2>Non-breaking-spaces</h2>
+        <div>
+    		<p>Most nonbreakingspaces (&amp;#160) on our site are unnecessary. Check to make sure they are serving a purpose, otherwise replace with a plain " ".</p>
+    		<ul>
+                #foreach ( $item in $nonBreakingSpacesReport )
+                    <li><a target='_parent' href='http://web.upstate.edu:8080/entity/open.act?type=${item.type}&amp;id=${item.id}'>${item.link}</a></li>
+                #end
+    		</ul>
+            <p>For admin use:
+                <pre>
+                    $ids = [#foreach ( $item in $nonBreakingSpacesReport )"$item.id", #end ]
+                </pre>
+            </p>   
+        </div>
+	#end    
+
+    #if ( !$divsInWysiwygReport.isEmpty() )
+    	<!--<h1>$site</h1>-->
+		<h2>Pages with divs in the wysiwyg</h2>
+        <div>
+    		<p>Because many content creators on our site do not have access to the HTML button, they may have difficulty editing the following pages:</p>
+    		<ul>
+                #foreach ( $item in $divsInWysiwygReport )
+                    <li><a target='_parent' href='http://web.upstate.edu:8080/entity/open.act?type=${item.type}&amp;id=${item.id}'>${item.link}</a></li>
+                #end
+    		</ul>
+            <p>For admin use:
+                <pre>
+                    $ids = [#foreach ( $item in $divsInWysiwygReport )"$item.id", #end ]
+                </pre>
+            </p>   
+        </div>
+	#end
+
+    #if ( !$oldestVsNewest.isEmpty() )
+        #if ( $oldestPath != $newestPath && $_DateTool.difference( $oldestPublished, $newestPublished ).getDays() > 30 )
+            <h2>Oldest vs. Newest Published Page</h2>
+            <div>
+                <p>Open these pages on the live site and make sure these pages have the same navigation.</p>
+                <ul>
+                    <li>Oldest: <a target='_parent' href='http://web.upstate.edu:8080/entity/open.act?type=page&amp;id=${oldestID}'>$oldestPage</a> | <a href="http://www.upstate.edu/${site.replaceAll('dev','')}/${oldestPath}.php">(view live)</a> </li>
+                    <li>Newest: <a target='_parent' href='http://web.upstate.edu:8080/entity/open.act?type=page&amp;id=${newestID}'>$newestPage</a> | <a href="http://www.upstate.edu/${site.replaceAll('dev','')}/${newestPath}.php">(view live)</a> </li>
+                    <li>Date difference: $_DateTool.difference( $oldestPublished, $newestPublished ).getDays() days</li>
+                </ul>
+            </div>
+        #end
+    #end
+   
+    #if ( !$largeImagesReport.isEmpty() )
+        <h2>Large Images</h2>
+        <div>
+            <p>Images on our site should be below 130K.</p>
+            <ul>
+                #foreach ( $item in $_SortTool.sort( $largeImagesReport, [ 'fileSize:desc' ] ) )
+                    <li><a target='_parent' href='http://web.upstate.edu:8080/entity/open.act?type=file&amp;id=${item.id}'>${item.link}</a> (${_DisplayTool.truncate( $item.fileSize.toString(), $_MathTool.sub($_MathTool.toInteger( $item.fileSize.toString().length() ),1),"KB")}) </li>
+                #end
+            </ul>
+            <p>For admin use:
+                <pre>
+                    $ids = [#foreach ( $item in $largeImagesReport )"$item.id", #end ]
+                </pre>
+            </p>   
+        </div>
+    #end
+
+
+    #if ( !$symLinksToUpstateReport.isEmpty() )
+        <h2>SymLinks that are links to upstate</h2>
+        <div>
+            <p>Some of these might be to sites within cascade.</p>
+            <ul>
+                #foreach ( $item in $_SortTool.sort( $symLinksToUpstateReport, [ 'badLink:asc' ] ) )
+    
+                    #set($pathToLink    =   "" )
+                    #if(!$item.path.contains("_link"))
+                        #set($pathToLink    =   " (in nav)" )
+                    #end
+                    <li><a target='_parent' href='http://web.upstate.edu:8080/entity/open.act?type=symlink&amp;id=${item.id}'>$_EscapeTool.xml( $item.badLink )</a>$pathToLink</li>
+                #end
+            </ul>
+            <p>For admin use:
+                <pre>
+                    $ids = [#foreach ( $item in $symLinksToUpstateReport )"$item.id", #end ]
+                </pre>
+            </p>   
+        </div>
+    #end
+
+
+
+ #if($whatReport.size() > 1)
+  </div>
+ #end
+ 
+    <p>(report done)</p> 
+#end
+
