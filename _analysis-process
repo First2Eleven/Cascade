@@ -1,0 +1,208 @@
+#macro(processBlock)
+
+    #chanwReinitializeListOfVariables( [ "path", "assetID", "assetType"] )
+
+    #set($link                  = $showSiteName + $result.path )
+    #set($assetID               = $result.getIdentifer().getId() )
+    #set($assetType             = $result.identifer.Type )
+
+    #if($whatReport.contains("wrongMetadata"))
+        #if($assetType != "block")
+            #set( $void     = $wrongMetadataReport.add( {"id":$assetID, "link":$link, "type":$assetType, "wrong":"block" } ) )         
+        #end
+    #end
+
+#end
+
+
+#macro(processFile)
+
+    #chanwReinitializeListOfVariables( [ "path", "assetID", "assetType"] )
+
+    #set($link                  = $showSiteName + $result.path  )
+    #set($assetID               = $result.getIdentifer().getId() )
+    #set($assetType             = $result.identifer.Type )
+
+    #if( $whatReport.contains("largeImages") )
+        #if( $result.path.contains("images") && !$result.path.contains(".eps") && !$result.path.contains(".doc") && $result.fileSize > 130000 )
+            #set( $void     = $largeImagesReport.add( {"id":$assetID, "link":$link, "fileSize":$result.fileSize } ) ) 
+        #end
+    #end
+    #if($whatReport.contains("wrongMetadata"))
+        #if($assetType != "file")
+            #set( $void     = $wrongMetadataReport.add( {"id":$assetID, "link":$link, "type":$assetType, "wrong":"file" } ) ) 
+        #end
+    #end
+
+    ##Bad system names
+    #if( $whatReport.contains("badSystemNames") )  
+        #set($systemName            = $result.name )
+		#set($systemNameLowered     = $systemName.toLowerCase() )
+		#if ($systemName.contains(" ") || $systemName != $systemNameLowered ) 
+            #set( $void     = $badSystemNamesReport.add( {"id":$assetID, "link":$link, "type":$assetType } ) ) 
+		#end   
+    #end     
+
+#end
+
+#macro(processFolder )
+
+    #chanwReinitializeListOfVariables( [ "path", "assetID", "assetType"] )
+
+    #set($link                  = $showSiteName + $result.path )
+    #set($assetID               = $result.getIdentifer().getId() )
+    #set($assetType             = $result.identifer.Type )
+ 
+    #if( $whatReport.contains("indexNotFirst") )
+        #if($result.path.indexOf("_") != 0 && $result.path.indexOf("pdf") != 0 && $result.path.indexOf("files") != 0 && $result.path.indexOf("images") != 0)
+            #set($children = $result.children)  
+            #set($sortedChildren = $_SortTool.sort($children, "folderOrder")) 
+            #foreach($sortResult in $sortedChildren)
+                #if($foreach.count == 1 && !$sortResult.name.contains("index") )
+                      #set( $void     = $indexNotFirstReport.add( {"id":$assetID, "link":$link, "type":$assetType } ) ) 
+                #end
+            #end
+        #end ##ignores folders with no pages        
+    #end
+    #if($whatReport.contains("wrongMetadata"))
+        #if($assetType != "folder")
+            #set( $void     = $wrongMetadataReport.add( {"id":$assetID, "link":$link, "type":$assetType, "wrong":"folder" } ) ) 
+        #end
+    #end
+        
+    ##Bad system names
+    #if( $whatReport.contains("badSystemNames") )  
+        #set($systemName            = $result.name )
+		#set($systemNameLowered     = $systemName.toLowerCase() )
+		#if ($systemName.contains(" ") || $systemName != $systemNameLowered ) 
+            #set( $void     = $badSystemNamesReport.add( {"id":$assetID, "link":$link, "type":$assetType } ) ) 
+		#end   
+    #end     
+#end 
+
+
+#macro(processPage )
+
+    #chanwReinitializeListOfVariables( [ 
+        "title", 
+        "publishedOn", "lastModified", 
+        "path", "assetID", "assetType",
+        "mainContent", "contentGroupContent", "allEverything"] )
+
+    #set($link                  = $showSiteName + $result.path )
+    #set($assetID               = $result.getIdentifer().getId() )
+    #set($assetType             = $result.identifer.Type )
+    #set($title                 = $_EscapeTool.xml( $result.getStructuredDataNode("main-content-title").getTextValue() ) )
+        
+    #if( $whatReport.contains("notPublished") || $whatReport.contains("oldestVsNewest")  )
+        #set($publishedOn           = $_MathTool.toNumber( $result.LastPublishedOn ) )
+    #end
+        
+    ##NotPublished    
+    #if( $whatReport.contains("notPublished") )
+        #set($lastModified          = $_MathTool.toNumber( $result.lastModified )  )
+        #if($publishedOn <= $lastModified)
+            #set( $void     = $notPublishedReport.add( {"id":$assetID, "link":$link, "type":$assetType } ) ) 
+        #end
+    #end
+    ##OldestVsNewest    
+    #if( $whatReport.contains("oldestVsNewest") )  
+        #if($publishedOn <= $oldestPublished || $oldestPublished.isEmpty() )
+            #set($oldestPublished   = $publishedOn )
+            #set($oldestPage        = $title )
+            #set($oldestPath        = $link )
+            #set($oldestID          = $assetID )
+        #end
+        #if($publishedOn >= $newestPublished || $newestPublished.isEmpty() )
+            #set($newestPublished   = $publishedOn )
+            #set($newestPage        = $title )
+            #set($newestPath        = $link )
+            #set($newestID          = $assetID )
+        #end
+    #end
+    
+    ##GRAB ALL CONTENT   
+    #if( $whatReport.contains("divsInWysiwyg") || $whatReport.contains("nonBreakingSpaces") || $whatReport.contains("textSearch") || $whatReport.contains("webDotUpstateLinks") )  
+	    #set($mainContent           = $result.getStructuredDataNode("main-content-content").getTextValue() )
+	    #set($mainContent           = $_SerializerTool.serialize($mainContent,true) )
+    	#set($contentGroupContent   = $result.getStructuredDataNodes("content-group/content-group-content") )
+        #foreach($contentContent in $contentGroupContent)
+    	    #set($allEverything     = $allEverything + $_SerializerTool.serialize($contentContent.getTextValue(),true) )
+        #end        
+        #set($allEverything         = $mainContent + $allEverything )
+        
+        #if( $whatReport.contains("nonBreakingSpaces") )  
+        	#if ($allEverything.contains("#160")  ) 
+                #set( $void     = $nonBreakingSpacesReport.add( {"id":$assetID, "link":$link, "type":$assetType } ) ) 
+            #end
+        #end
+        #if( $whatReport.contains("divsInWysiwyg") ) 
+            #if ($allEverything.contains("</div>") ) 
+                #set( $void     = $divsInWysiwygReport.add( {"id":$assetID, "link":$link, "type":$assetType } ) ) 
+    	    #end
+        #end
+        #if( $whatReport.contains("webDotUpstateLinks") )  
+            #if ($allEverything.contains("http://web.upstate") ) 
+                #set( $void     = $webDotUpstateLinksReport.add( {"id":$assetID, "link":$link, "type":$assetType } ) ) 
+    	    #end
+        #end
+        #if( $whatReport.contains("textSearch") ) 
+            #if( $whatReport.contains("Summary") )
+                #if( $allEverything.contains($currentPage.metadata.getSummary()) ) 
+                    #set( $void     = $textSearchReport.add( {"id":$assetID, "link":$link, "type":$assetType } ) ) 
+                #end
+            #else
+                #if ($allEverything.contains($whatReport.replaceAll("textSearch_","") ) )
+                    #set( $void     = $textSearchReport.add( {"id":$assetID, "link":$link, "type":$assetType } ) ) 
+                #end
+            #end
+        #end        
+        
+    #end
+
+    #if($whatReport.contains("wrongMetadata"))
+        #if($assetType != "page")
+            #set( $void     = $wrongMetadataReport.add( {"id":$assetID, "link":$link, "type":$assetType, "wrong":"page" } ) ) 
+        #end
+    #end
+
+    ##Bad system names
+    #if( $whatReport.contains("badSystemNames") )  
+    	#set($systemName            = $result.name )
+		#set($systemNameLowered     = $systemName.toLowerCase() )
+		#if ($systemName.contains(" ") || $systemName != $systemNameLowered ) 
+            #set( $void     = $badSystemNamesReport.add( {"id":$assetID, "link":$link, "type":$assetType } ) ) 
+		#end   
+    #end        
+        
+    ##H1 issues
+    #if( $whatReport.contains("badH1Names") )  
+        #if ($title.contains("Page Title") || $title.contains("New Page") || $title.isEmpty()  ) 
+            #if( !$result.getStructuredDataNode("page-include-chooser") && !$result.dataDefinitionPath.contains("Shared") && !$link.contains("_cascade") )
+                #set( $void     = $badH1NamesReport.add( {"id":$assetID, "link":$link, "type":$assetType } ) ) 
+            #end
+        #end
+    #end
+#end
+
+
+#macro(processSymlink)
+
+    #chanwReinitializeListOfVariables( [ "path", "assetID", "assetType"] )
+    
+    #set($link                  = $showSiteName + $result.path )
+    #set($assetID               = $result.getIdentifer().getId() )
+    #set($assetType             = $result.identifer.Type )
+
+    #if( $whatReport.contains("symLinksToUpstate") )
+        #if( $result.link.contains("http://upstate.edu") || $result.link.contains("http://www.upstate.edu") || $result.link.contains("http://web.upstate.edu")  ) 
+            #set( $void     = $symLinkWebEverything.add( {"badLink":$link, "id":$assetID, "path":$result.path } ) ) 
+            #set( $void     = $symLinksToUpstateReport.add( {"id":$assetID, "link":$link, "type":$assetType } ) ) 
+        #end    
+    #end
+    #if($whatReport.contains("wrongMetadata"))
+        #if($assetType != "symlink")
+            #set( $void     = $wrongMetadataReport.add( {"id":$assetID, "link":$link, "type":$assetType, "wrong":"symlink" } ) ) 
+        #end
+    #end
+#end
