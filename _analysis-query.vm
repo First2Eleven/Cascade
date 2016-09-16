@@ -1,0 +1,102 @@
+
+#macro(grabPages)
+
+    ##Query Pages Standard
+    #set($query = $query.siteName( $site ) ) 
+	#set($query = $query.includePages(true))  
+	#set($query = $query.byMetadataSet("site://_common/Page") )
+	#set($query = $query.maxResults( 300 ) )
+    #set($query = $query.sortBy("path") )  
+    #set($pages = $query.execute()) 
+
+    ##Query Pages Responsive
+    #set($query = $query.siteName( $site ) ) 
+    #set($query = $query.includePages(true))  
+	#set($query = $query.byMetadataSet("site://_common_assets/Page") )
+	#set($query = $query.maxResults( 300 ) )
+    #set($query = $query.sortBy("path") )  
+    #set($void  = $pages.addAll($query.execute() ) )  
+
+#end
+
+#macro(grabFolders )
+
+    ##Query Folder Standard   
+    ##Index Should be First
+    #set($query = $query.siteName( $site )) 
+	#set($query = $query.includePages(true))  
+	#set($query = $query.byMetadataSet("site://_common/Directory Info") )
+	#set($query = $query.maxResults( 100 ) )
+    #set($query = $query.sortBy("path"))  
+	#set($folders = $query.execute()) 
+
+    #set($query = $query.siteName( $site )) 
+	#set($query = $query.includePages(true))  
+	#set($query = $query.byMetadataSet("site://_common_assets/Folder") )
+	#set($query = $query.maxResults( 100 ) )
+    #set($query = $query.sortBy("path"))  
+    #set($void  = $folders.addAll($query.execute() ) ) 
+
+#end ##macro grabFolders
+
+
+#macro( grabBlocks )    
+
+    ##Query Blocks Standard
+    ##Unused Blocks, probably
+	#set($query = $query.siteName( $site )) 
+	#set($query = $query.includePages(false))  
+	#set($query = $query.byMetadataSet("site://_common/Block Info") )
+	#set($query = $query.maxResults( 100 ) )
+    #set($query = $query.sortBy("path"))  
+	#set($blocks = $query.execute()) 
+
+    ##Query Blocks RWD
+	#set($query = $query.siteName( $site )) 
+	#set($query = $query.includePages(false))  
+	#set($query = $query.byMetadataSet("site://_common_assets/Block") )
+	#set($query = $query.maxResults( 100 ) )
+    #set($query = $query.sortBy("path")) 
+    #set($void  = $blocks.addAll($query.execute() ) )  
+
+#end ##end grabBlocks
+
+#macro( grabFiles )
+
+    ##Query Files Standard
+	#set($query = $query.siteName( $site )) 
+	#set($query = $query.includePages(false))  
+	#set($query = $query.byMetadataSet("site://_common/Default") )
+	#set($query = $query.maxResults( 100 ) )
+    #set($query = $query.sortBy("path")) 
+	#set($files = $query.execute()) 
+
+    ##Query Files RWD 
+	#set($query = $query.siteName( $site )) 
+	#set($query = $query.includePages(false))  
+	#set($query = $query.byMetadataSet("site://_common_assets/Default") )
+	#set($query = $query.maxResults( 100 ) )
+    #set($query = $query.sortBy("path")) 
+    #set($void  = $files.addAll($query.execute() ) )  
+
+#end ## end grabFiles
+
+#macro( grabSymlinks )
+    ##Query Pages Standard
+    #set($query = $query.siteName( $site )) 
+    #set($query = $query.includePages(false))  
+    #set($query = $query.byMetadataSet("site://_common/External Link") )
+	#set($query = $query.maxResults( 500 ) )
+    #set($query = $query.sortBy("path") )  
+	#set($symlinks = $query.execute() ) 
+
+    ##Query Pages Responsive
+    #set($query = $query.siteName( $site )) 
+    #set($query = $query.includePages(false))  
+	#set($query = $query.byMetadataSet("site://_common_assets/Symlink") )
+	#set($query = $query.maxResults( 500 ) )
+    #set($query = $query.sortBy("path") )  
+	#set($void  = $symlinks.addAll($query.execute() ) )    
+
+#end
+            
