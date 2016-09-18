@@ -1,0 +1,198 @@
+Documentation
+Pete Thomas
+
+Developer in Training
+Run into issues with one, solve it with the other
+XSLT-> Velocity -> Web Services (in progress)
+SUNY Upstate
+
+About 400 editors
+Wing Ming Chan
+Presentation
+
+Create a report site with minimal code and blocks
+What code to use?
+Velocity Locator Tool Query Class w/Web Services
+$currentPage.name
+Exampes
+Why have a report site or code that creates reports?
+Too many cooks. Adhering to standards.
+
+Bad system names
+Small image -> large images
+Empty pages
+Also issues that arise from not giving users complete edit capabilities
+
+<div>s in the WYSIWYGs
+99% of nonbreaking spaces
+Then there's issues that everyone runs into, intentional or not
+
+Forgetting to publish changes live
+Index pages not listed first
+Testing server/ Cascade links
+Placing images or accordions in our wysiwigs, which would be better in blocks.
+What way should I create a report?
+There are a few ways to create a report.
+
+Velocity & index blocks
+XSLT & index blocks
+Velocity & Query method
+Web Services
+Mix & match
+Benefits	Detriments
+XSLT + Index Blocks	
+it works for what it is.
+With XSLT, you are stuck with index blocks.
+Velocity + Index Blocks	
+You can get the entire page xml with a single line of code.
+Index Blocks tend to timeout for large sites.
+Overreading an asset (render xml)
+Can only read pages and folders.
+Velocity with Query/Locator Tool	
+It's all done in one format (so instead of 100 sites, which require 1 or 100 formats and 100 index blocks, it's just 1 format that queries the site or sites you need)
+Rare timeouts
+Can be turned into wigets (if it becomes available)
+Harder to grab info from pages and blocks created with data definitions.
+Query can only find content based on MetadataSet or Content Type. Ideally a Query tool would let you query an entire site or query a specific asset type.
+Assets with no MetadataSet or ContentType is completely hidden from Query
+Web Services	
+Report and fix in one spot.
+Write to asset.
+Fix en masse.
+Tree traversal vs. Content Type / Metadata
+Access to all siteNames
+Access to all administration assets
+Access to all users and groups
+Slower (but safe)
+Administer-driven (workarounds are possible)
+Non-native, for better or worse.
+Code can't be turned into widgets (again, not an issue currently)
+
+siteAnalysis macro
+Macro: #macro(siteAnalysis $whatSite, $whatReport)
+
+How to call it: #siteAnalysis( "currentstudents", "badSystemNames")
+
+$whatSite parameter
+
+Lists the name of the site you want analyzed.
+
+Cascade siteName (eg. "currentstudents", "medicine", "about")
+"allSites" - searches all sites.
+"createdX" and "modifiedX"
+"currentPage" - use the page name (eg "currentstudents" "created7")
+$whatReport parameter
+
+What you want reported on (eg. "badSystemNames" "wrongMetadata")
+"report" - a collection of reports. Usually used in conjunction with a page
+"test" - a collection of reports that are not 100% functional
+"textSearch_X" - where X is any code that you want.
+"currentPage" -  use the page name (eg. "badSystemNames")
+Future parameter:
+
+"currentSummary" - would then allow text not allow as system names (eg. "<!--" )
+Using the Query class in the Locator Tool
+
+#macro(grabPages)
+
+    ##Query one set of pages
+    #set($query = $_.query() )  
+    #set($query = $query.siteName( $site ) ) 
+        #set($query = $query.includePages(true))  
+        #set($query = $query.byMetadataSet("site://_common/Page") )
+        #set($query = $query.maxResults( 300 ) )
+    #set($query = $query.sortBy("path") )  
+    #set($pages = $query.execute()) 
+
+    ##Query another set of pages
+    #set($query = $query.siteName( $site ) ) 
+    #set($query = $query.includePages(true))  
+        #set($query = $query.byMetadataSet("site://_common_assets/Page") )
+        #set($query = $query.maxResults( 300 ) )
+    #set($query = $query.sortBy("path") )  
+    #set($void  = $pages.addAll($query.execute() ) )  
+
+How to find:
+Capitalizations and spaces in system names.
+
+Query all files, folders, and pages
+In those pages search all system names for " " to find spaces.
+To find capitalizations, create a variable that's the system name lowercased. If the lowercased version doesn't match the original version, then there's capitalizations.
+For any error, note the path, id, and type.
+Wrong Metadata set
+
+Our metadata is associated with asset type. Block=Block, File=Default, Folder=Folder, Page=Page or Page RWD
+
+Query all blocks, files, folders, pages, and symlinks using MetadataSet
+For each asset, if $result.identifer.Type != the queried MetadataSet, then add asset to report.
+Find Large Images
+
+Query all images
+If the file is an image (contains ".jpg" or ".png" or ".gif") and $result.fileSize > 130000 (130K) then add asset to report.
+Index not Listed First
+
+Query all folders
+If the folder does not begin with an underscore $result.path.indexOf("_")
+If the folder does not contain files or images $result.path.contains("images")
+Get the children of the folder, and then sort by "folderOrder" #set($sortedChildren = $_SortTool.sort($children, "folderOrder"))
+Run a "foreach" and if the first counted is not named "index" ($foreach.count == 1 && !$sortResult.name.contains("index")) then throw to report.
+Pages not published
+
+Query all pages
+Turn dates into numbers ($_MathTool.toNumber( $result.LastPublishedOn ))
+If LastPublishedOn <= lastModified then add to report
+Non-breaking spaces
+
+Query all pages
+Grab appropriate Structured Data Nodes ($result.getStructuredDataNode("main-content-content").getTextValue())
+Serialize that content ($_SerializerTool.serialize($mainContent,true) ))
+If non-breaking spaces exist (.contains("#160") throw to report.
+Divs in WYSIWYGs
+
+Like above but if there's a ending div tag (.contains("</div>") then add to report.
+Links go to Testing server
+
+Like above but if a link url contains start of testing server (.contains("http://web.upstate.edu")), add to report
+Can also be used to find links that go to Cascade itself.
+Find specific text
+
+Like above, as long as $whatReport contains "textSearch", it searches for a text
+If search string is in the summary of the currentPage, it uses: $currentPage.metadata.getSummary()
+If search string is in the title of the page/$whatReport then: $whatReport.replaceAll("textSearch_","")
+External Symlinks that could be Internal Links
+
+Query all symLinks
+If link contains links that would appear internally, then report.
+Plans for future additions
+
+search for comments in wysiwyg
+find blocks and files that have no relationships
+find assets missing metadatasets (query vs. tree traversal)
+Thinks we want that would be hard/impossible to implement just in velocity:
+
+check to make sure all users still work here. Might be easier to just send email and see if it bounces back.
+Find blocks and files that have no relationships (use Web Services)
+Find the names of all pages
+Show the Report
+At the beginning we initialized an array, that will become a multidemensional array.
+When there is an error found, code adds an array of values into a multidimensional array.
+id $result.getIdentifer().getId() eg. "dbe9cf5a8b7f08ee4b34b5a8751a7e86"
+path $showSiteName + $result.path eg: "site://site-analysis/documentation/index"
+asset type $result.identifer.Type eg: "page"
+When it's ready to produce the report, it checks to see if the array is empty. If not:
+Shows title of error report and description.
+Velocity #foreach through the array and spits out a list of errors and links to Cascade.
+Spit out a fake array to use in Web Services $ids = [#foreach ( $item in $notPublishedReport )"$item.id", #end ]
+Using Web Services and Other Velocity Code to Build Out Your Report Site and Fix Issues
+Using Velocity:
+
+Use the name of pages in $currentName to make all 200+ site analysis pages run with just two script blocks for the whole site.
+Using Web Services:
+
+Find all site names
+Create one page in "Site Specific Analysis" and then have Web Services copy that page for the other sites.
+Fix your stuff en masse!
+
+Looking ahead
+Ocho has a Find/Replace function
+#if($cascade.future != "admin-created widgets") Have Web Services run reports. #end
