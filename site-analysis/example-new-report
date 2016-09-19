@@ -1,17 +1,39 @@
 Create a new $whatReport argument
-    1. come up with argument name. For this we'll use: "findHiddenComments":
-    1. initialize an empty array to collect the error's name, path, type.
+
+    1. come up with argument name. For this we'll use: "findHiddenComments"
+
+    2. initialize an empty array to collect the error's name, path, type.
         #set( $findHiddenCommentsReport = []"
-    2. put argument in the "test" array. Once QA is complete, add to the "report" array. 
-    3. find what query you need to use and add your argument to it's invocation section
+        
+    3. put argument in the "test" array. Once QA is complete, add to the "report" array.
+        #set( $test = ["testExample1", "testExample2", "findHiddenComments"])
+
+    4. find what query you need to use and add your argument to it's invocation section
         #if ( $whatReport.contains("findHiddenComments") )
             #grabPages ##runs the query
         #end
-    4. Create proccess
-        #foreach( $result in $pages )
-            #if ($whatReport.contains("findHiddenComments")
-                #if( $result.content-wysiwyg.contains("<!--")
-                    
-                #end
+
+    5. Create proccess in appropriate macro(s). In this case, add to #macro(processPage )
+        #if ($whatReport.contains("findHiddenComments")
+            #if( $result.content-wysiwyg.contains("<!--")
+                #set( $void = $findHiddenCommentsReport.add( {"id":$assetID, "link":$link, "type":$assetType } ) )                    
             #end
         #end
+
+    6. Present the report
+        #if ( !$findHiddenCommentsReport.isEmpty() ) ##if there are errors, show report
+		<h2>Find HiddenComments</h2>
+        <div>
+    		<p>Comments are not visible to users, may be out of date, probably unnecessary</p>
+    		<ul>
+                #foreach ( $item in $badH1NamesReport )
+                    <li><a target='_parent' href='/open.act?type=${item.type}&amp;id=${item.id}'>${item.link}</a></li>
+                #end
+    		</ul>
+            <p>For admin use:
+                <pre>
+                    $ids = [#foreach ( $item in $badH1NamesReport )"$item.id", #end ]
+                </pre>
+            </p>   
+        </div>
+	#end
