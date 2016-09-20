@@ -1,0 +1,24 @@
+    //All Assets with Incorrect Metadata Set "ID" => "type",
+    $filesToFix = array(
+
+"473680088b7f08560032bb55b90b20d6" => "file", "42291e598b7f085600a5bfd562e00ba2" => "file", "473563e58b7f08560032bb55be46401d" => "file", "4733e8348b7f08560032bb558468f398" => "file", "4718c4a48b7f0856017930bc49d2345b" => "file", "47019c1d8b7f0856017930bc8a0aeb0e" => "file", "473f3edc8b7f08560032bb555f856942" => "file", "473b84518b7f08560032bb55c6445607" => "file", "46fa00a78b7f0856017930bcf63bb770" => "file", "471932158b7f0856017930bc9a499a3e" => "file", "470ebae18b7f0856017930bc1c00d30b" => "file", "474467ac8b7f08560032bb55e1652bef" => "file", "46f958eb8b7f0856017930bcf139b809" => "file", "41b89b538b7f085600a5bfd54de5bfa7" => "file", "472a5bf08b7f08560032bb559c6b45cd" => "file", "474ca0f98b7f08560032bb5521c5cdf7" => "file", "47143f3f8b7f0856017930bc13782a90" => "file", "473732ba8b7f08560032bb552e1b93d5" => "file", "46f876d88b7f0856017930bcf7871db0" => "file", "46ffd7748b7f0856017930bc2e71beee" => "file", "46febc9f8b7f0856017930bc40088319" => "file", "473d2bf08b7f08560032bb55c2613962" => "file", "4733cd958b7f08560032bb5540a5f63e" => "file", "46fd77ef8b7f0856017930bc81b20493" => "file", "4744b5498b7f08560032bb55b72f2037" => "file", "47365e638b7f08560032bb552aff17d0" => "file", "421a95998b7f085600a5bfd5a2bd7003" => "file", "471917048b7f0856017930bc532be727" => "file", "472827008b7f08560032bb55756b1dd1" => "file", "472b05438b7f08560032bb559aabcf64" => "file", "bb8b76188b7f08ee2dbad4e8d0a7f0d0" => "file", "bb8c5ff58b7f08ee2dbad4e813784a47" => "file", "bb8cd98b8b7f08ee2dbad4e8e6b8369d" => "file", "41d0eb1a8b7f085600a5bfd53827a488" => "file" );    
+    
+//  $commonSet = $cascade->getAsset( a\MetadataSet::TYPE, "Block", "_common_assets" ); 
+    $commonSet = $cascade->getAsset( a\MetadataSet::TYPE, "Default", "_common_assets" ); 
+//  $commonSet = $cascade->getAsset( a\MetadataSet::TYPE, "Page", "_common_assets" );         
+//  $commonSet = $cascade->getAsset( a\MetadataSet::TYPE, "Symlink", "_common_assets" ); 
+//  $commonSet = $cascade->getAsset( a\MetadataSet::TYPE, "Folder", "_common_assets" );   
+    
+    foreach( $filesToFix as $cascadeId => $cascadeType){
+
+         if($cascadeType == "file"){
+//          $fileName =   a\Block::getBlock( $service, $cascadeId );
+            $fileName =  $cascade->getAsset( a\File::TYPE, $cascadeId );
+//          $fileName =  $cascade->getAsset( a\Page::TYPE, $cascadeId );
+//          $fileName =  $cascade->getAsset( a\Symlink::TYPE, $cascadeId );
+//          $fileName =  $cascade->getAsset( a\Folder::TYPE, $cascadeId );
+             
+            $fileName->setMetadataSet( $commonSet )->edit();
+            echo $cascadeId . " now has the correct metadataset." ;
+        } 
+    };
