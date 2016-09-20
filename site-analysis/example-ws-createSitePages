@@ -1,0 +1,61 @@
+  
+    $sites            = $cascade->getSites();
+    $site_names       = array();
+    $sites_to_exclude = array(
+        "Upstate-Globals",
+        "demo",
+        "site-analysis"
+    );
+    
+    $page_names       = array();
+    
+    // get all site names
+    foreach( $sites as $site )
+    {
+        $site_name = $site->getPathPath();
+        
+        if( !in_array( $site_name, $sites_to_exclude ) && 
+            !u\StringUtility::startsWith( $site_name, "_" ) &&
+            !u\StringUtility::startsWith( $site_name, "test" )  )
+        )
+        $site_names[] = $site_name;
+    }
+    
+    // get folder and see if there are existing sites
+    $site_analysis_folder = $cascade->getAsset( a\Folder::TYPE, "70fb2d4a8b7f08ee76f6d2e81b6c2453" );
+    $children             = $site_analysis_folder->getChildren();
+    
+    // removes any pages that already exist
+    foreach( $children as $child )
+    {
+        $child_name = $child->getPathPath();
+        $child_name = u\StringUtility::getNameFromPath( $child_name );
+        
+        if( $child->getType() == a\Page::TYPE &&
+            $child_name != "index" &&
+                !in_array( $child_name, $sites_to_exclude ) )
+        {
+            $page_names[] = $child_name;
+        }
+    }
+    
+    //get one page that's right
+    $master_page = $cascade->getAsset( a\Page::TYPE, "70fb2e358b7f08ee76f6d2e8848505d7" ); //22Q
+    
+    // create Site Analysis pages
+    foreach( $site_names as $site_name )
+    {
+        if( !in_array( $site_name, $page_names ) )
+        {
+            $master_page->copy( $site_analysis_folder, $site_name );
+            
+            //now get that page
+            $page_name       = "sites/" . $site_name ;
+            $page            = $cascade->getAsset( a\Page::TYPE, $page_name, "site-analysis" );
+    
+            //and change the titles/displayName
+            $page->getMetadata()->setDisplayName( $site_name )->setTitle( $site_name );
+            $page->edit();
+            echo $site_name . "page created";
+        }
+    }
