@@ -1,0 +1,84 @@
+Capitalizations and spaces in system names.
+  1. Query all files, folders, and pages
+  2. In those pages search all system names for " " to find spaces.
+  3. To find capitalizations, create a variable that's the system name lowercased. If the lowercased version doesn't match the original version, then there's capitalizations.
+  4. For any error, add asset to report.
+
+Wrong Metadata set
+Our metadata is associated with asset type. Block=Block, File=Default, Folder=Folder, Page=Page or Page RWD
+  1. Query all blocks, files, folders, pages, and symlinks using MetadataSet
+  2. For each asset, if $result.identifer.Type != the queried MetadataSet
+  3. add to report.
+
+Find Large Images
+  1. Query all images
+  2. If the file is an image (contains ".jpg" or ".png" or ".gif") and $result.fileSize > 130000 (130K)
+  3. add to report.
+
+Index not Listed First
+  1. Query all folders
+  2. Exclude folders that begin with an underscore $result.path.indexOf("_")
+  3. If the folder does not contain files or images $result.path.contains("images")
+  4. Get the children of the folder, and then sort by "folderOrder" #set($sortedChildren = $_SortTool.sort($children, "folderOrder"))
+  5. Run a "foreach" and if the first counted is not named "index" ($foreach.count == 1 && !$sortResult.name.contains("index"))
+  5. add to report.
+
+Pages not published
+  1. Query all pages
+  2. Turn dates into numbers ($_MathTool.toNumber( $result.LastPublishedOn ))
+  3. If LastPublishedOn <= lastModified
+  4. add to report
+
+Non-breaking spaces
+  1. Query all pages
+  2. Grab appropriate Structured Data Nodes ($result.getStructuredDataNode("main-content-content").getTextValue())
+  3. Serialize that content ($_SerializerTool.serialize($mainContent,true) ))
+  4. If non-breaking spaces exist (.contains("#160")
+  5. add to report.
+
+Divs in WYSIWYGs
+  Like above but if there's a ending div tag (.contains("</div>") then add to report.
+  
+Links go to Testing server
+  Like above but if a link url contains start of testing server (.contains("http://web.upstate.edu")), add to report
+  Can also be used to find links that go to Cascade itself.
+
+Find specific text
+  Like above, as long as $whatReport contains "textSearch", it searches for a text
+  If search string is in the summary of the currentPage, it uses: $currentPage.metadata.getSummary()
+  If search string is in the title of the page/$whatReport then: $whatReport.replaceAll("textSearch_","")
+
+External Symlinks that could be Internal Links
+  1. Query all symLinks
+  2. If link contains links that would appear internally
+  3. add to report.
+
+Plans for future additions
+  1. search for comments in wysiwyg
+  2. find blocks and files that have no relationships
+  3. find assets missing metadatasets (query vs. tree traversal)
+
+Show the Report
+  1. At the beginning we initialized an array, that will become a multidemensional array.
+  2. When there is an error found, code adds an array of values into a multidimensional array.
+      id -  $result.getIdentifer().getId() eg. "dbe9cf5a8b7f08ee4b34b5a8751a7e86"
+      path - $showSiteName + $result.path eg: "site://site-analysis/documentation/index"
+      asset type - $result.identifer.Type eg: "page"
+  4. When it's ready to produce the report, it checks to see if the array is empty. If not:
+  5. Shows title of error report and description.
+  6. Velocity #foreach through the array and spits out a list of errors and links to Cascade.
+  7. Spit out a fake array to use in Web Services $ids = [#foreach ( $item in $notPublishedReport )"$item.id", #end ]
+  
+Splitting ModifiedX
+  1. If $whatSite.contains("modified")
+  2. get the days by: $whatSite.replaceAll("modified","")
+  3. Query assets
+  4. Run foreach for an queried asset array
+  5. Only process assets modified in the last X days
+
+Splitting CreatedX
+  above but replace "modified" with "created"
+  5. Only proceess assets created in the last X days:
+    $_DateTool.difference($chanwCallJavaMethod,$systemDate).getDays() <= $dayInteger
+  
+  
