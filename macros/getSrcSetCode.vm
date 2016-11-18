@@ -1,9 +1,14 @@
+##From our global values:
+#set( $S_SYSTEM_ASSET_LOCAL = "[" + "system-asset:local]" )
+#set( $E_SYSTEM_ASSET_LOCAL = "[" + "/system-asset:local]" )
+
+## for testing
 #set( $image ="/images/computer-people.jpg" )
-#set( $site = "thomas-test" 
+#set( $site = "thomas-test" )
+#thomaspeGetSrcSetCode( $image $site ) ##returns the following variable
+$thomaspeGetSrcSetCode 
 
-#thomaspeGetSrcSetCode( $image $site )
-$thomaspeGetSrcSetCode ## returns $thomaspeGetSrcSetCode
-
+## macro
 #macro( thomaspeGetSrcSetCode $imagePath $imageSiteName )
     ## replace ".jpg" with array of replacements in order of priority
     #set( $thomaspeSrcSetValues = {} )
