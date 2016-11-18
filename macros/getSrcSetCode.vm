@@ -1,0 +1,30 @@
+#set( $image ="/images/computer-people.jpg" )
+#set( $site = "thomas-test" 
+
+#thomaspeGetSrcSetCode( $image $site )
+$thomaspeGetSrcSetCode ## returns $thomaspeGetSrcSetCode
+
+#macro( thomaspeGetSrcSetCode $imagePath $imageSiteName )
+    ## replace ".jpg" with array of replacements in order of priority
+    #set( $thomaspeSrcSetValues = {} )
+    #set( $void =  $thomaspeSrcSetValues.put( "1000w", [".jpg"] ) )
+    #set( $void =  $thomaspeSrcSetValues.put( "750w", ["-700x350.jpg","-700x233.jpg"] ) )
+    #set( $void =  $thomaspeSrcSetValues.put( "460w", ["-400x200.jpg","-400x133.jpg"] ) )
+    #set( $thomaspeGetSrcSetCode = "srcset='" )
+    #foreach( $imageOptions in $thomaspeSrcSetValues.keySet()  )
+        #set( $thomaspeImageOptionsFound = false )   
+        #foreach( $imageSize in $thomaspeSrcSetValues[ $imageOptions ] )
+            #set( $thomaspeNewImagePath = $imagePath.replaceAll( ".jpg", $imageSize ) )
+            #if( !$_PropertyTool.isNull(
+                $_.locateFile( $thomaspeNewImagePath, $imageSiteName ) ) &&
+                !$thomaspeImageOptionsFound )
+                #set( $thomaspeImageOptionsFound = true )
+                #set( $thomaspeGetSrcSetCode =
+                    $thomaspeGetSrcSetCode + $S_SYSTEM_ASSET_LOCAL + "site://${site}" +
+                    $thomaspeNewImagePath + $E_SYSTEM_ASSET_LOCAL + " " +
+                    $imageOptions + ", ")
+            #end
+        #end
+    #end
+    #set( $thomaspeGetSrcSetCode = $thomaspeGetSrcSetCode + "'" )
+#end ##end macro 
