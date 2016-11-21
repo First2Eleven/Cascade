@@ -5,20 +5,30 @@
 ## for testing
 #set( $image ="/images/computer-people.jpg" )
 #set( $site = "thomas-test" )
-#thomaspeGetSrcSetCode( $image $site ) ##returns the following variable
-$thomaspeGetSrcSetCode 
 
-## macro
-#macro( thomaspeGetSrcSetCode $imagePath $imageSiteName )
-    ## replace ".jpg" with array of replacements in order of priority
+## calling macros
+#thomaspeSrcSetValues ##creates $thomaspeSrcSetValues variable
+#thomaspeGetSrcSetCode( $image $site $thomaspeSrcSetValues) ##creates the $thomaspeGetSrcSetCode variable
+
+##example in html code
+<img src="site://${site}${image}" alt="computer image" 
+$thomaspeGetSrcSetCode 
+/>
+
+## custom macro
+#macro (thomaspeSrcSetValues)  ## replace ".jpg" with array of replacements in order of priority
     #set( $thomaspeSrcSetValues = {} )
     #set( $void =  $thomaspeSrcSetValues.put( "1000w", [".jpg"] ) )
     #set( $void =  $thomaspeSrcSetValues.put( "750w", ["-700x350.jpg","-700x233.jpg"] ) )
     #set( $void =  $thomaspeSrcSetValues.put( "460w", ["-400x200.jpg","-400x133.jpg"] ) )
+#end
+
+## global macro
+#macro( thomaspeGetSrcSetCode $imagePath $imageSiteName $map)
     #set( $thomaspeGetSrcSetCode = "srcset='" )
-    #foreach( $imageOptions in $thomaspeSrcSetValues.keySet()  )
+    #foreach( $imageOptions in $map.keySet()  )
         #set( $thomaspeImageOptionsFound = false )   
-        #foreach( $imageSize in $thomaspeSrcSetValues[ $imageOptions ] )
+        #foreach( $imageSize in $map[ $imageOptions ] )
             #set( $thomaspeNewImagePath = $imagePath.replaceAll( ".jpg", $imageSize ) )
             #if( !$_PropertyTool.isNull(
                 $_.locateFile( $thomaspeNewImagePath, $imageSiteName ) ) &&
